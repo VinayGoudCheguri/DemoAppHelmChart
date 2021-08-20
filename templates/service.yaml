@@ -1,0 +1,32 @@
+# mongodb-service
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.Mongodb.servicename}}
+  namespace: {{ .Values.namespace }}
+spec:
+  ports:
+    - port: {{ .Values.Mongodb.port }}
+      targetPort: {{ .Values.Mongodb.targetPort }}
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "Mongodb.labels" . | nindent 4 }}
+
+---
+# movies-service
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.Movies.servicename}}
+  namespace: {{ .Values.namespace }}
+spec:
+  type: {{ .Values.Movies.type }}
+  ports:
+    - port: {{ .Values.Movies.port }}
+      targetPort: {{ .Values.Movies.targetPort }}
+      protocol: TCP
+      nodePort: {{ .Values.Movies.nodePort }}
+      name: http
+  selector:
+    {{- include "Movies.labels" . | nindent 4 }}

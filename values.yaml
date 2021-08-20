@@ -1,0 +1,57 @@
+# Default values for movies-service.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+namespace: pie-slingshot
+
+configmap: mongodb-configmap
+
+secret: mongodb-secret
+
+Mongodb:
+  name: mongodb
+  username: root
+  password: password
+  image: mongo:5.0.2
+  pullPolicy: IfNotPresent
+  servicename: mongodb-servicehelm
+  deploymentname: mongodb-deploymenthelm
+  port: 27017
+  targetPort: 27017
+
+Movies:
+  name: movies-api
+  image: vinaycheguri/movies-api:0.0.2
+  pullPolicy: IfNotPresent
+  servicename: movies-servicehelm
+  deploymentname: movies-deploymenthelm
+  type: LoadBalancer
+  port: 8080
+  targetPort: 8080
+  nodePort: 30004
+
+
+image:
+  repository: nginx
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 80
+
+
+#nodeSelector: {"team": "pie-slingshot"}
+nodeSelector:
+  team: pie-slingshot
+#affinity:
+#  nodeAffinity:
+#    requiredDuringSchedulingIgnoredDuringExecution:
+#      nodeSelectorTerms:
+#        - matchExpressions:
+#            - key: "stateless"
+#              operator: In
+#              values:
+#                - "true"
+
+

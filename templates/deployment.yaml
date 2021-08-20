@@ -1,0 +1,89 @@
+# mongodb-deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.Mongodb.deploymentname}}
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "Mongodb.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "Mongodb.labels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "Mongodb.labels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: {{ .Values.Mongodb.name }}
+          image: {{ .Values.Mongodb.image }}
+          imagePullPolicy: {{ .Values.Mongodb.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.Mongodb.targetPort }}
+              protocol: TCP
+          env:
+            - name: MONGO_INITDB_ROOT_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secret }}
+                  key: mongo-root-username
+            - name: MONGO_INITDB_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secret }}
+                  key: mongo-root-password
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+
+---
+# movies-deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.Movies.deploymentname}}
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "Movies.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "Movies.labels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "Movies.labels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: {{ .Values.Movies.name }}
+          image: {{ .Values.Movies.image }}
+          imagePullPolicy: {{ .Values.Movies.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.Movies.targetPort }}
+              protocol: TCP
+          env:
+            - name: spring.data.mongodb.username
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secret }}
+                  key: mongo-root-username
+            - name: spring.data.mongodb.password
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secret }}
+                  key: mongo-root-password
+            - name: spring.data.mongodb.host
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Values.configmap }}
+                  key: database_url
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
