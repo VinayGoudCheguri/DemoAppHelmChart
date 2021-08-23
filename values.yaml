@@ -54,4 +54,40 @@ nodeSelector:
 #              values:
 #                - "true"
 
+autoscaling:
+  enabled: true
+  keda:
+    enabled: true
+    pollingInterval: "30"  # check 30sec periodically for metrics data
+    cooldownPeriod: "300"  # once the load decreased, it will wait for 5 min and downscale
+    minReplicaCount: "1"   # should be >= replicaCount specified in values.yaml
+    maxReplicaCount: "5"
+    triggers:
+      - type: prometheus
+        metadata:
+          serverAddress: http://dev-observability.aws.phenom.local/prometheus
+          metricName: http_requests_per_second
+          threshold: '1'
+          query: sum(irate(http_server_requests_seconds_count{namespace="jobsync",service="gateway-service"}[5m])) by (service)
+      - type: memory
+        metadata:
+          type: Utilization
+          value: "80"  # hpa make sure average Utilization <=80 by adding new pods
+      - type: cpu
+        metadata:
+          type: Utilization
+          value: "80"  # hpa make sure average Utlization <=80 by adding new pods
 
+resources:
+  requests:           # Minimum resources to run our app
+    cpu: 500m
+    memory: 256Mi
+  limits:             # Maximum resources app can use from underlying node
+    cpu: 1200m
+    memory: 512Mi
+
+triggers:
+  - type: cpu
+      metadata:
+        type: AverageValue
+        value: 400m  # hpa make sure average value <=400m by adding new pods
