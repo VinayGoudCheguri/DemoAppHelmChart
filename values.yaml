@@ -88,6 +88,6 @@ resources:
 
 triggers:
   - type: cpu
-      metadata:
-        type: AverageValue
-        value: 400m  # hpa make sure average value <=400m by adding new pods
+    metadata:
+      type: AverageValue
+      value: 400m  # hpa make sure average value <=400m by adding new pods
