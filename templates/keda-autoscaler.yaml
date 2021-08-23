@@ -1,0 +1,19 @@
+{{- if and .Values.autoscaling.enabled .Values.autoscaling.keda.enabled -}}
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: {{ .Release.Name }}-autoscaler
+spec:
+  scaleTargetRef:
+    apiVersion:    apps/v1  # Optional. Default: apps/v1
+    kind:          Deployment        # Optional. Default: Deployment
+    name:          {{ .Values.Movies.deploymentname}}     # Mandatory. Must be in the same namespace as the ScaledObject
+  pollingInterval: {{ .Values.autoscaling.keda.pollingInterval }}    # Optional. Default: 30 seconds
+  cooldownPeriod:  {{ .Values.autoscaling.keda.cooldownPeriod }}     # Optional. Default: 300 seconds
+  minReplicaCount: {{ .Values.autoscaling.keda.minReplicaCount }}    # Optional. Default: 0
+  maxReplicaCount: {{ .Values.autoscaling.keda.maxReplicaCount }}    # Optional. Default: 100
+  {{- with .Values.autoscaling.keda.triggers }}
+  triggers:
+    {{- toYaml . | nindent 4 }}
+  {{ end }}
+  {{ end }}
